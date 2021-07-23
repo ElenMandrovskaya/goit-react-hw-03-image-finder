@@ -6,7 +6,8 @@ import { fetchImages } from '../services/api';
 import { Container } from './App.styled';
 import { SearchBar } from '../components/Searchbar/Searchbar';
 import { ImageGallery } from '../components/ImageGallery/ImageGallery';
-import { Modal } from '../components/Modal/Modal';
+// import { Modal } from '../components/Modal/Modal';
+import { Spinner } from '../components/Loader/Spinner';
 
 export default class App extends Component {
   state = {
@@ -16,12 +17,39 @@ export default class App extends Component {
     page: 1,
     showModal: false,
   };
+
   async componentDidUpdate(prevProps, prevState) {
     if (prevState.searchQuery !== this.state.searchQuery) {
-      const images = await fetchImages(this.state.searchQuery);
-      this.setState({ images });
+      try {
+        this.setState({ status: 'pending' });
+        const images = await fetchImages(
+          this.state.searchQuery,
+          this.state.page,
+        );
+        this.setState({ images, status: 'resolved' });
+      } catch (error) {
+        this.setState({ status: 'rejected' });
+        toast.error('Error');
+      }
+    } else if (prevState.page !== this.state.page) {
+      try {
+        this.setState({ status: 'pending' });
+        const images = await fetchImages(
+          this.state.searchQuery,
+          this.state.page,
+        );
+
+        this.setState({
+          images: [...this.state.images, ...images],
+          status: 'resolved',
+        });
+        // this.scrollOnLoadMore();
+      } catch (error) {
+        this.setState({ status: 'rejected' });
+        toast.error('Error');
+      }
     }
-  };
+  }
 
   handleNameChange = searchQuery => {
     if (searchQuery.trim() === "") {
@@ -37,12 +65,17 @@ export default class App extends Component {
     }))
   };
 
+  incrementPage = () => {
+    this.setState({ page: this.state.page + 1 });
+  };
+
   render() {
     return (
       <Container>
         <SearchBar onSearch={this.handleNameChange} />
         <ImageGallery images={this.state.images}/>
-        <Modal/>
+        {/* <Modal/> */}
+        {/* <Spinner/> */}
         <ToastContainer />
       </Container>
     );
