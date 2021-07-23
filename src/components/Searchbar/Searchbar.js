@@ -1,7 +1,8 @@
-// import PropTypes from "prop-types";
+import PropTypes from "prop-types";
 import { Header, SearchForm, SubmitBtn, BtnLabel, Input } from "./Searchbar.styled"
 
 export function SearchBar({ onSearch }) {
+
   const handleSearch = event => {
     event.preventDefault();
     onSearch(event.target.elements.searchQuery.value);
@@ -9,7 +10,8 @@ export function SearchBar({ onSearch }) {
 
     return (
         <Header>
-            <SearchForm onSubmit={handleSearch}>
+          <SearchForm
+              onSubmit={handleSearch}>
                 <SubmitBtn type="submit">
                     <BtnLabel>Search</BtnLabel>
                 </SubmitBtn>
@@ -19,8 +21,11 @@ export function SearchBar({ onSearch }) {
                     autoComplete="off"
                     autoFocus
                     placeholder="Search images and photos"
-                    />
-            </SearchForm>
+                />
+          </SearchForm>
         </Header>
-    )
+    );
 }
+SearchBar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};
