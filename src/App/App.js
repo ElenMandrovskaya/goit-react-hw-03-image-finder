@@ -7,7 +7,8 @@ import { Container } from './App.styled';
 import { SearchBar } from '../components/Searchbar/Searchbar';
 import { ImageGallery } from '../components/ImageGallery/ImageGallery';
 // import { Modal } from '../components/Modal/Modal';
-import { Spinner } from '../components/Loader/Spinner';
+// import { Spinner } from '../components/Loader/Spinner';
+import { LoadBtn } from '../components/Button/Button'
 
 export default class App extends Component {
   state = {
@@ -76,6 +77,7 @@ export default class App extends Component {
         <ImageGallery images={this.state.images}/>
         {/* <Modal/> */}
         {/* <Spinner/> */}
+        <LoadBtn onClick={this.incrementPage}/>
         <ToastContainer />
       </Container>
     );
