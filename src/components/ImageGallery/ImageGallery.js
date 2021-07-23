@@ -3,7 +3,7 @@ import { Gallery } from "./ImageGallery.styled";
 import { GalleryItem } from "../ImageGalleryItem/ImageGalleryItem";
 
 export function ImageGallery({ images }) {
-    console.log(images)
+    // console.log(images)
     return (
         <Gallery>
             {images.map(image => (
