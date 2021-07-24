@@ -35,7 +35,7 @@ export default class App extends Component {
         }));
       } catch (err) {
         this.setState({ status: "idle" });
-        toast.error(`Not Found ${searchQuery}`);
+        toast.error(`Not Found any images by query: ${searchQuery}`);
       }
 
       page > 1 &&
@@ -60,7 +60,12 @@ export default class App extends Component {
     if (searchQuery.trim() === "") {
       toast.info('Please, enter query!');
         return;
-        }
+    }
+    if (this.state.searchQuery === searchQuery) {
+      toast.info('Please, enter new query!');
+      return;
+    }
+    this.reset();
     this.setState({ searchQuery });
   };
 
