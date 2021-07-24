@@ -17,40 +17,44 @@ export default class App extends Component {
     status: 'idle',
     page: 1,
     showModal: false,
+    selectedImage: null,
   };
 
   async componentDidUpdate(prevProps, prevState) {
-    if (prevState.searchQuery !== this.state.searchQuery) {
-      try {
-        this.setState({ status: 'pending' });
-        const images = await fetchImages(
-          this.state.searchQuery,
-          this.state.page,
-        );
-        this.setState({ images, status: 'resolved' });
-      } catch (error) {
-        this.setState({ status: 'rejected' });
-        toast.error('Error');
+    const { searchQuery, page } = this.state;
+    if (prevState.searchQuery !== searchQuery || prevState.page !== page) {
+      this.setState({ status: "pending" });
+          try {
+            const images = await fetchImages(searchQuery, page);
+            if (!images.length) {
+                throw new Error();
+              }
+         this.setState((prevState) => ({
+          images: [...prevState.images, ...images],
+          status: "resolved",
+        }));
+      } catch (err) {
+        this.setState({ status: "idle" });
+        toast.error(`Not Found ${searchQuery}`);
       }
-    } else if (prevState.page !== this.state.page) {
-      try {
-        this.setState({ status: 'pending' });
-        const images = await fetchImages(
-          this.state.searchQuery,
-          this.state.page,
-        );
 
-        this.setState({
-          images: [...this.state.images, ...images],
-          status: 'resolved',
+      page > 1 &&
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: "smooth",
         });
-        // this.scrollOnLoadMore();
-      } catch (error) {
-        this.setState({ status: 'rejected' });
-        toast.error('Error');
-      }
     }
-  }
+  };
+  
+  reset = () => {
+    this.setState({
+      searchQuery: "",
+      page: 1,
+      images: [],
+      selectedImage: null,
+      status: "idle",
+    });
+  };
 
   handleNameChange = searchQuery => {
     if (searchQuery.trim() === "") {
