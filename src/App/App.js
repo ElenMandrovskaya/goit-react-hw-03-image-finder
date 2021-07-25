@@ -6,8 +6,8 @@ import { fetchImages } from '../services/api';
 import { Container } from './App.styled';
 import { SearchBar } from '../components/Searchbar/Searchbar';
 import { ImageGallery } from '../components/ImageGallery/ImageGallery';
-// import { Modal } from '../components/Modal/Modal';
-// import { Spinner } from '../components/Loader/Spinner';
+import { Modal } from '../components/Modal/Modal';
+import { Spinner } from '../components/Loader/Spinner';
 import { LoadBtn } from '../components/Button/Button'
 
 export default class App extends Component {
@@ -16,7 +16,7 @@ export default class App extends Component {
     images: [],
     status: 'idle',
     page: 1,
-    showModal: false,
+    // showModal: false,
     selectedImage: null,
   };
 
@@ -24,18 +24,20 @@ export default class App extends Component {
     const { searchQuery, page } = this.state;
     if (prevState.searchQuery !== searchQuery || prevState.page !== page) {
       this.setState({ status: "pending" });
-          try {
-            const images = await fetchImages(searchQuery, page);
-            if (!images.length) {
-                throw new Error();
-              }
-         this.setState((prevState) => ({
+      try {
+        const images = await fetchImages(searchQuery, page);
+        if (!images.length) {
+          throw new Error();
+        }
+        this.setState((prevState) => ({
           images: [...prevState.images, ...images],
           status: "resolved",
         }));
-      } catch (err) {
-        this.setState({ status: "idle" });
-        toast.error(`Not Found any images by query: ${searchQuery}`);
+      } catch (error) {
+        this.setState({
+          status: "rejected"
+        });
+        toast.warning(`Not Found any images by query: ${searchQuery}`);
       }
 
       page > 1 &&
@@ -45,8 +47,17 @@ export default class App extends Component {
         });
     }
   };
-  
-  reset = () => {
+
+  handleQueryChange = searchQuery => {
+    if (this.state.searchQuery === searchQuery) {
+      toast.info('Please, enter new query!');
+      return;
+    }
+    this.resetState();
+    this.setState({ searchQuery });
+  };
+
+  resetState = () => {
     this.setState({
       searchQuery: "",
       page: 1,
@@ -56,40 +67,62 @@ export default class App extends Component {
     });
   };
 
-  handleNameChange = searchQuery => {
-    if (searchQuery.trim() === "") {
-      toast.info('Please, enter query!');
-        return;
-    }
-    if (this.state.searchQuery === searchQuery) {
-      toast.info('Please, enter new query!');
-      return;
-    }
-    this.reset();
-    this.setState({ searchQuery });
-  };
-
   toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal
-    }))
+    this.setState(({ selectedImage }) => ({
+      selectedImage: !selectedImage,
+    }));
   };
 
   incrementPage = () => {
     this.setState({ page: this.state.page + 1 });
   };
 
-  render() {
-    return (
-      <Container>
-        <SearchBar onSearch={this.handleNameChange} />
-        <ImageGallery images={this.state.images}/>
-        {/* <Modal/> */}
-        {/* <Spinner/> */}
-        <LoadBtn onClick={this.incrementPage}/>
-        <ToastContainer />
-      </Container>
-    );
-  }
+  handleSelectedImage = imageURL => {
+    this.setState({ selectedImage: imageURL });
+  };
   
+
+  render() {
+
+    const { images, selectedImage, status } = this.state;
+
+    if (status === "idle") {
+      return (
+        <Container>
+          <SearchBar onSearch={this.handleQueryChange} />
+        </Container>
+      )
+    }
+
+    if (status === "pending") {
+      return (
+        <Container>
+          <SearchBar onSearch={this.handleQueryChange} />
+          <Spinner />
+        </Container>
+      )
+   }
+
+    if (status === "resolved") {
+          return (
+          <Container>
+            <SearchBar onSearch={this.handleQueryChange} />
+            <ImageGallery images={images} onImageSelect={this.handleSelectedImage}/>
+            {images.length > 0 && <LoadBtn onClick={this.incrementPage} />}
+            {selectedImage && (
+              <Modal largeImageURL={selectedImage} onClose={this.toggleModal} />
+            )}
+            <ToastContainer />
+          </Container>
+        )}
+      
+    if (status === "rejected") {
+        return (
+          <Container>
+            <SearchBar onSearch={this.handleQueryChange} />
+            <ToastContainer />
+          </Container>
+        )}
+  }
 }
+

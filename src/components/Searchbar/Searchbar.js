@@ -1,11 +1,17 @@
 import PropTypes from "prop-types";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Header, SearchForm, SubmitBtn, BtnLabel, Input } from "./Searchbar.styled"
 
 export function SearchBar({ onSearch }) {
-
-  const handleSearch = event => {
-    event.preventDefault();
-    onSearch(event.target.elements.searchQuery.value);
+  const handleSearch = e => {
+    e.preventDefault();
+    if (e.target.elements.searchQuery.value.trim() === "") {
+      toast.info('Please, enter query!');
+      return
+    }
+    onSearch(e.target.elements.searchQuery.value.toLowerCase().trim());
+    e.target.elements.searchQuery.value = "";
   };
 
     return (
@@ -20,8 +26,7 @@ export function SearchBar({ onSearch }) {
                     type="text"
                     autoComplete="off"
                     autoFocus
-                    placeholder="Search images and photos"
-                />
+                    placeholder="Search images and photos"/>
           </SearchForm>
         </Header>
     );
